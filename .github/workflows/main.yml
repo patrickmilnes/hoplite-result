@@ -34,4 +34,4 @@ jobs:
       - name: Test
         run: dotnet test -c release --no-build ./HopliteLabs.Result
       - name: Pack
-        run: dotnet pack --no-build ./HopliteLabs.Result /p:Version={{ env.VERSION }}
+        run: dotnet pack --no-build ./HopliteLabs.Result /p:Version=${{ env.VERSION }}
