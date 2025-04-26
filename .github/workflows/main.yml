@@ -28,6 +28,6 @@ jobs:
       - name: Build
         run: dotnet build -c release --no-restore ./HopliteLabs.Result
       - name: Test
-        run: dotnet test --no-build --verbosity normal ./HopliteLabs.Result
-      - name: Publish
+        run: dotnet test --no-build ./HopliteLabs.Result
+      - name: Pack
         run: dotnet pack --no-build ./HopliteLabs.Result
