@@ -38,4 +38,4 @@ jobs:
       - name: Pack
         run: dotnet pack --no-build ./HopliteLabs.Result /p:Version=${{ env.VERSION }}
       - name:
-        run: dotnet nuget push ./HopliteLabs.Result/HopliteLabs.Result.Core/bin/Release/HopliteLabs.Result.Core.${{ env.VERSION }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./HopliteLabs.Result/HopliteLabs.Result.Core/bin/Release/HopliteLabs.Result.Core.${{ env.VERSION }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
