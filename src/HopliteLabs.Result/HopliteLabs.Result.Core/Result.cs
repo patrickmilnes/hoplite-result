@@ -1,18 +1,49 @@
 ﻿namespace HopliteLabs.Result.Core;
 
-public class Result<T, TS> where TS : IError
+public abstract class Result<TValue, TError>
 {
-    public bool IsOk { get; }
-    public T? Value { get; }
-    public TS? Error { get; }
+    public abstract bool IsOk { get; }
 
-    protected Result(bool isOk, T? value, TS? error)
+    public static Result<TValue, TError> Ok(TValue value)
     {
-        IsOk = isOk;
-        Value = value;
-        Error = error;
+        return new OkVariant(value);
     }
 
-    public static Result<T, TS> Ok(T? value) => new (true, value, default);
-    public static Result<T, TS> Err(TS? err) => new (false, default, err);
+    public static Result<TValue, TError> Err(TError error)
+    {
+        return new ErrorVariant(error);
+    }
+
+
+    public T Match<T>(Func<TValue, T> onOk, Func<TError, T> onErr)
+    {
+        return this switch
+        {
+            OkVariant ok => onOk(ok.Value),
+            ErrorVariant err => onErr(err.ErrorValue),
+            _ => throw new InvalidOperationException("Unknown variant of Result")
+        };
+    }
+
+    public class OkVariant : Result<TValue, TError>
+    {
+        public OkVariant(TValue value)
+        {
+            Value = value;
+        }
+
+        public TValue Value { get; }
+        public override bool IsOk => true;
+    }
+
+    public class ErrorVariant : Result<TValue, TError>
+    {
+        public ErrorVariant(TError error)
+        {
+            ErrorValue = error;
+        }
+
+        public TError ErrorValue { get; }
+        public override bool IsOk => false;
+    }
 }
