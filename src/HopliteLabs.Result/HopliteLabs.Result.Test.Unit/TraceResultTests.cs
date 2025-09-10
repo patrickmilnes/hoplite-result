@@ -20,6 +20,7 @@ public class TraceResultTests
         // Assert
         Assert.True(result.IsOk);
         Assert.Equal("Hello", output);
+        Assert.Equal(id, result.TraceId);
     }
 
     [Fact]
@@ -37,5 +38,6 @@ public class TraceResultTests
         // Assert
         Assert.False(result.IsOk);
         Assert.Equal("An error has occurred", output);
+        Assert.Equal(id, result.TraceId);
     }
 }
