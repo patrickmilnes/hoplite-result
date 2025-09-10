@@ -10,14 +10,16 @@ public class TraceResultTests
     {
         // Arrange
         var id = Guid.NewGuid();
+        var result = TraceResult<string, MyError>.Ok(id, "Hello");
         
         // Act
-        var result = TraceResult<string, MyError>.Ok(id, "Hello");
+        var output = result.Match(
+            value => value,
+            err => err.Message);
         
         // Assert
         Assert.True(result.IsOk);
-        Assert.Equal("Hello", result.Value);
-        Assert.Null(result.Error);
+        Assert.Equal("Hello", output);
     }
 
     [Fact]
@@ -25,13 +27,15 @@ public class TraceResultTests
     {
         // Arrange
         var id = Guid.NewGuid();
+        var result = TraceResult<string, MyError>.Err(id, new MyError("An error has occurred"));
         
         // Act
-        var result = TraceResult<string, MyError>.Err(id, new MyError("An error has occurred"));
+        var output = result.Match(
+            value => value,
+            err => err.Message);
         
         // Assert
         Assert.False(result.IsOk);
-        Assert.Equal("An error has occurred", result.Error?.Message);
-        Assert.Null(result.Value);
+        Assert.Equal("An error has occurred", output);
     }
 }
