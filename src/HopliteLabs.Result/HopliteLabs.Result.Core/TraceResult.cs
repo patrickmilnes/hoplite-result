@@ -1,13 +1,43 @@
 ﻿namespace HopliteLabs.Result.Core;
 
-public class TraceResult<T, TS> : Result<T, TS> where TS : IError
+public class TraceResult<TValue, TError> : Result<TValue, TError>
 {
-    public Guid TraceId { get; set; }
+    public override bool IsOk { get; }
 
-    public TraceResult(bool isOk, Guid traceId, T? value, TS? error) : base(isOk, value, error) => TraceId = traceId;
+    public static OkVariant Ok(Guid traceId, TValue value)
+    {
+        return new OkVariant(traceId, value);
+    }
 
-    public Result<T, TS> ToResult() => this;
+    public static ErrorVariant Err(Guid traceId, TError error)
+    {
+        return new ErrorVariant(traceId, error);
+    }
 
-    public static TraceResult<T, TS> Ok(Guid traceId, T value) => new(true, traceId, value, default);
-    public static TraceResult<T, TS> Err(Guid traceId, TS error) => new(false, traceId, default, error);
+
+    public new class OkVariant : Result<TValue, TError>.OkVariant
+    {
+        public OkVariant(Guid traceId, TValue value) : base(value)
+        {
+            TraceId = traceId;
+            Value = value;
+        }
+
+        public TValue Value { get; }
+        public Guid TraceId { get; set; }
+        public override bool IsOk => true;
+    }
+
+    public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
+    {
+        public ErrorVariant(Guid traceId, TError error) : base(error)
+        {
+            TraceId = traceId;
+            ErrorValue = error;
+        }
+
+        public TError ErrorValue { get; }
+        public Guid TraceId { get; set; }
+        public override bool IsOk => false;
+    }
 }
