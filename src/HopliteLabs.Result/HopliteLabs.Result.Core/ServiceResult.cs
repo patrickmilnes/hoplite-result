@@ -16,7 +16,7 @@ public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 
     public abstract HttpStatusCode StatusCode { get; }
 
-    public new T Match<T>(Func<TValue, HttpStatusCode, T> onOk, Func<TError, HttpStatusCode, T> onErr)
+    public T Match<T>(Func<TValue, HttpStatusCode, T> onOk, Func<TError, HttpStatusCode, T> onErr)
     {
         return this switch
         {
@@ -26,7 +26,7 @@ public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
         };
     }
 
-    public new void Match(Action<TValue, HttpStatusCode> onOk, Action<TError, HttpStatusCode> onErr)
+    public void Match(Action<TValue, HttpStatusCode> onOk, Action<TError, HttpStatusCode> onErr)
     {
         switch (this)
         {

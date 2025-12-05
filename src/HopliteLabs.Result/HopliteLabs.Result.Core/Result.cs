@@ -16,7 +16,7 @@ public abstract class Result<TValue, TError>
     public abstract bool IsOk { get; }
     public bool IsErr => !IsOk;
 
-    public new T Match<T>(Func<TValue, T> onOk, Func<TError, T> onErr)
+    public T Match<T>(Func<TValue, T> onOk, Func<TError, T> onErr)
     {
         return this switch
         {
@@ -27,7 +27,7 @@ public abstract class Result<TValue, TError>
     }
 
 
-    public new void Match(Action<TValue> onOk, Action<TError> onErr)
+    public void Match(Action<TValue> onOk, Action<TError> onErr)
     {
         switch (this)
         {

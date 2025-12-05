@@ -14,7 +14,7 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 
     public abstract Guid TraceId { get; }
 
-    public new T Match<T>(Func<TValue, Guid, T> onOk, Func<TError, Guid, T> onErr)
+    public T Match<T>(Func<TValue, Guid, T> onOk, Func<TError, Guid, T> onErr)
     {
         return this switch
         {
@@ -24,7 +24,7 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
         };
     }
 
-    public new void Match(Action<TValue, Guid> onOk, Action<TError, Guid> onErr)
+    public void Match(Action<TValue, Guid> onOk, Action<TError, Guid> onErr)
     {
         switch (this)
         {
