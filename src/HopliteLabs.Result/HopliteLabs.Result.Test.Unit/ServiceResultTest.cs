@@ -36,4 +36,31 @@ public class ServiceResultTest
         Assert.Equal(error, output);
         Assert.Equal(statusCode, result.StatusCode);
     }
+
+    private Task<ServiceResult<Guid, bool>> GetServiceResultAsync(bool succeed)
+    {
+        if (succeed)
+        {
+            return Task.FromResult<ServiceResult<Guid, bool>>(ServiceResult<Guid, bool>.Ok(Guid.NewGuid(), HttpStatusCode.OK));
+        }
+        else
+        {
+            return Task.FromResult<ServiceResult<Guid, bool>>(ServiceResult<Guid, bool>.Err(false, HttpStatusCode.NotFound));
+        }
+    }
+
+    [Fact]
+    public async Task GivenServiceResult_WhenAwaited_ShouldReturnOkVariant()
+    {
+        var result = await GetServiceResultAsync(true);
+        Assert.True(result.IsOk);
+    }
+
+    [Fact]
+    public async Task GivenServiceResult_WhenAwaited_ShouldReturnErrorVariant()
+    {
+        var result = await GetServiceResultAsync(false);
+        Assert.False(result.IsOk);
+    }
+
 }
