@@ -4,26 +4,25 @@ namespace HopliteLabs.Result.Core;
 
 public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 {
-    public static implicit operator ServiceResult<TValue, TError>(OkVariant variant) => variant;
-    public static implicit operator ServiceResult<TValue, TError>(ErrorVariant variant) => variant;
-
-    public static OkVariant Ok(TValue value, HttpStatusCode statusCode)
+    public static ServiceResult<TValue, TError> Ok(TValue value, HttpStatusCode statusCode)
     {
-        return new OkVariant(value, statusCode);
+        return new ServiceResultOk<TValue, TError>(value, statusCode);
     }
 
-    public static ErrorVariant Err(TError error, HttpStatusCode statusCode)
+    public static ServiceResult<TValue, TError> Err(TError error, HttpStatusCode statusCode)
     {
-        return new ErrorVariant(error, statusCode);
+        return new ServiceResultErr<TValue, TError>(error, statusCode);
     }
+
+    public abstract HttpStatusCode StatusCode { get; }
 
     public new T Match<T>(Func<TValue, HttpStatusCode, T> onOk, Func<TError, HttpStatusCode, T> onErr)
     {
         return this switch
         {
-            OkVariant ok => onOk(ok.Value, ok.StatusCode),
-            ErrorVariant err => onErr(err.ErrorValue, err.StatusCode),
-            _ => throw new InvalidOperationException("Unknow variant of ServiceResult")
+            ServiceResultOk<TValue, TError> ok => onOk(ok.Value, ok.StatusCode),
+            ServiceResultErr<TValue, TError> err => onErr(err.ErrorValue, err.StatusCode),
+            _ => throw new InvalidOperationException("Unknown variant of ServiceResult")
         };
     }
 
@@ -31,36 +30,40 @@ public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
     {
         switch (this)
         {
-            case OkVariant ok:
+            case ServiceResultOk<TValue, TError> ok:
                 onOk(ok.Value, ok.StatusCode);
                 break;
-            case ErrorVariant err:
+            case ServiceResultErr<TValue, TError> err:
                 onErr(err.ErrorValue, err.StatusCode);
                 break;
             default:
                 throw new InvalidOperationException("Unknown variant of ServiceResult");
         }
     }
+}
 
-    public new class OkVariant : Result<TValue, TError>.OkVariant
+public sealed class ServiceResultOk<TValue, TError> : ServiceResult<TValue, TError>
+{
+    internal ServiceResultOk(TValue value, HttpStatusCode statusCode) : base()
     {
-        internal OkVariant(TValue value, HttpStatusCode statusCode) : base(value)
-        {
-            StatusCode = statusCode;
-        }
-
-        public HttpStatusCode StatusCode { get; }
-        public override bool IsOk => true;
+        Value = value;
+        StatusCode = statusCode;
     }
 
-    public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
-    {
-        internal ErrorVariant(TError error, HttpStatusCode statusCode) : base(error)
-        {
-            StatusCode = statusCode;
-        }
+    public TValue Value { get; }
+    public override HttpStatusCode StatusCode { get; }
+    public override bool IsOk => true;
+}
 
-        public HttpStatusCode StatusCode { get; }
-        public override bool IsOk => false;
+public sealed class ServiceResultErr<TValue, TError> : ServiceResult<TValue, TError>
+{
+    internal ServiceResultErr(TError error, HttpStatusCode statusCode) : base()
+    {
+        ErrorValue = error;
+        StatusCode = statusCode;
     }
+
+    public TError ErrorValue { get; }
+    public override HttpStatusCode StatusCode { get; }
+    public override bool IsOk => false;
 }

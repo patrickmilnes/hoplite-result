@@ -10,19 +10,15 @@ public class ServiceResultTest
     {
         var statusCode = HttpStatusCode.OK;
         var value = "Success";
-        ServiceResult<string, string> result = ServiceResult<string, string>.Ok(value, statusCode);
+        var result = ServiceResult<string, string>.Ok(value, statusCode);
 
         var output = result.Match(
             (val, status) => val,
             (err, status) => err);
 
-        var resultStatusCode = result.Match(
-            (val, status) => status,
-            (err, status) => status);
-
         Assert.True(result.IsOk);
         Assert.Equal(value, output);
-        Assert.Equal(statusCode, resultStatusCode);
+        Assert.Equal(statusCode, result.StatusCode);
     }
 
     [Fact]
@@ -30,31 +26,26 @@ public class ServiceResultTest
     {
         var statusCode = HttpStatusCode.NotFound;
         var error = "Not Found";
-        ServiceResult<string, string> result = ServiceResult<string, string>.Err(error, statusCode);
+        var result = ServiceResult<string, string>.Err(error, statusCode);
 
         var output = result.Match(
-            val => val,
-            err => err);
-
-        var resultStatusCode = result.Match(
-            (val, status) => status,
-            (err, status) => status
-        );
+            (val, status) => val,
+            (err, status) => err);
 
         Assert.False(result.IsOk);
         Assert.Equal(error, output);
-        Assert.Equal(statusCode, resultStatusCode);
+        Assert.Equal(statusCode, result.StatusCode);
     }
 
-    private Task<ServiceResult<Guid, bool>> GetServiceResultAsync(bool succeed)
+    private async Task<ServiceResult<Guid, bool>> GetServiceResultAsync(bool succeed)
     {
         if (succeed)
         {
-            return Task.FromResult<ServiceResult<Guid, bool>>(ServiceResult<Guid, bool>.Ok(Guid.NewGuid(), HttpStatusCode.OK));
+            return ServiceResult<Guid, bool>.Ok(Guid.NewGuid(), HttpStatusCode.OK);
         }
         else
         {
-            return Task.FromResult<ServiceResult<Guid, bool>>(ServiceResult<Guid, bool>.Err(false, HttpStatusCode.NotFound));
+            return ServiceResult<Guid, bool>.Err(false, HttpStatusCode.MethodNotAllowed);
         }
     }
 
