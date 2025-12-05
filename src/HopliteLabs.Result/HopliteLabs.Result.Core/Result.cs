@@ -27,7 +27,7 @@ public abstract class Result<TValue, TError>
 
     public class OkVariant : Result<TValue, TError>
     {
-        public OkVariant(TValue value)
+        internal OkVariant(TValue value)
         {
             Value = value;
         }
@@ -38,7 +38,7 @@ public abstract class Result<TValue, TError>
 
     public class ErrorVariant : Result<TValue, TError>
     {
-        public ErrorVariant(TError error)
+        internal ErrorVariant(TError error)
         {
             ErrorValue = error;
         }

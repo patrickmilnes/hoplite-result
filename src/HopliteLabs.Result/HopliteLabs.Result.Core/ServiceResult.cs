@@ -18,7 +18,7 @@ public class ServiceResult<TValue, TError> : Result<TValue, TError>
 
     public new class OkVariant : Result<TValue, TError>.OkVariant
     {
-        public OkVariant(TValue value, HttpStatusCode statusCode) : base(value)
+        internal OkVariant(TValue value, HttpStatusCode statusCode) : base(value)
         {
             Value = value;
             StatusCode = statusCode;
@@ -31,7 +31,7 @@ public class ServiceResult<TValue, TError> : Result<TValue, TError>
 
     public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
     {
-        public ErrorVariant(TError error, HttpStatusCode statusCode) : base(error)
+        internal ErrorVariant(TError error, HttpStatusCode statusCode) : base(error)
         {
             ErrorValue = error;
             StatusCode = statusCode;

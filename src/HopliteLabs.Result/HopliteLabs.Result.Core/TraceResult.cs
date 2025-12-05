@@ -17,7 +17,7 @@ public class TraceResult<TValue, TError> : Result<TValue, TError>
 
     public new class OkVariant : Result<TValue, TError>.OkVariant
     {
-        public OkVariant(Guid traceId, TValue value) : base(value)
+        internal OkVariant(Guid traceId, TValue value) : base(value)
         {
             TraceId = traceId;
             Value = value;
@@ -30,7 +30,7 @@ public class TraceResult<TValue, TError> : Result<TValue, TError>
 
     public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
     {
-        public ErrorVariant(Guid traceId, TError error) : base(error)
+        internal ErrorVariant(Guid traceId, TError error) : base(error)
         {
             TraceId = traceId;
             ErrorValue = error;
