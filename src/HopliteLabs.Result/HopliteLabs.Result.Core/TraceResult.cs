@@ -2,26 +2,25 @@
 
 public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 {
-    public static implicit operator TraceResult<TValue, TError>(OkVariant variant) => variant;
-    public static implicit operator TraceResult<TValue, TError>(ErrorVariant variant) => variant;
-
-    public static OkVariant Ok(Guid traceId, TValue value)
+    public static TraceResult<TValue, TError> Ok(TValue value, Guid traceId)
     {
-        return new OkVariant(traceId, value);
+        return new TraceResultOk<TValue, TError>(value, traceId);
     }
 
-    public static ErrorVariant Err(Guid traceId, TError error)
+    public static TraceResult<TValue, TError> Err(TError error, Guid traceId)
     {
-        return new ErrorVariant(traceId, error);
+        return new TraceResultErr<TValue, TError>(error, traceId);
     }
+
+    public abstract Guid TraceId { get; }
 
     public new T Match<T>(Func<TValue, Guid, T> onOk, Func<TError, Guid, T> onErr)
     {
         return this switch
         {
-            OkVariant ok => onOk(ok.Value, ok.TraceId),
-            ErrorVariant err => onErr(err.ErrorValue, err.TraceId),
-            _ => throw new InvalidOperationException("Unknow variant of TraceResult")
+            TraceResultOk<TValue, TError> ok => onOk(ok.Value, ok.TraceId),
+            TraceResultErr<TValue, TError> err => onErr(err.ErrorValue, err.TraceId),
+            _ => throw new InvalidOperationException("Unknown variant of TraceResult")
         };
     }
 
@@ -29,36 +28,40 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
     {
         switch (this)
         {
-            case OkVariant ok:
+            case TraceResultOk<TValue, TError> ok:
                 onOk(ok.Value, ok.TraceId);
                 break;
-            case ErrorVariant err:
+            case TraceResultErr<TValue, TError> err:
                 onErr(err.ErrorValue, err.TraceId);
                 break;
             default:
                 throw new InvalidOperationException("Unknown variant of TraceResult");
         }
     }
+}
 
-    public new class OkVariant : Result<TValue, TError>.OkVariant
+public sealed class TraceResultOk<TValue, TError> : TraceResult<TValue, TError>
+{
+    internal TraceResultOk(TValue value, Guid traceId) : base()
     {
-        internal OkVariant(Guid traceId, TValue value) : base(value)
-        {
-            TraceId = traceId;
-        }
-
-        public Guid TraceId { get; }
-        public override bool IsOk => true;
+        Value = value;
+        TraceId = traceId;
     }
 
-    public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
-    {
-        internal ErrorVariant(Guid traceId, TError error) : base(error)
-        {
-            TraceId = traceId;
-        }
+    public TValue Value { get; }
+    public override Guid TraceId { get; }
+    public override bool IsOk => true;
+}
 
-        public Guid TraceId { get; }
-        public override bool IsOk => false;
+public sealed class TraceResultErr<TValue, TError> : TraceResult<TValue, TError>
+{
+    internal TraceResultErr(TError error, Guid traceId) : base()
+    {
+        ErrorValue = error;
+        TraceId = traceId;
     }
+
+    public TError ErrorValue { get; }
+    public override Guid TraceId { get; }
+    public override bool IsOk => false;
 }
