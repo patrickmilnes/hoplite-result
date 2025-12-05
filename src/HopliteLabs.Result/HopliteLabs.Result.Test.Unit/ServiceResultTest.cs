@@ -50,14 +50,14 @@ public class ServiceResultTest
     }
 
     [Fact]
-    public async Task GivenServiceResult_WhenAwaited_ShouldReturnOkVariant()
+    public async void GivenServiceResult_WhenAwaited_ShouldReturnOkVariant()
     {
         var result = await GetServiceResultAsync(true);
         Assert.True(result.IsOk);
     }
 
     [Fact]
-    public async Task GivenServiceResult_WhenAwaited_ShouldReturnErrorVariant()
+    public async void GivenServiceResult_WhenAwaited_ShouldReturnErrorVariant()
     {
         var result = await GetServiceResultAsync(false);
         Assert.False(result.IsOk);
