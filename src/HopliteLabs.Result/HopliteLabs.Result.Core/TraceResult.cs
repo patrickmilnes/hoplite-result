@@ -1,8 +1,9 @@
 ﻿namespace HopliteLabs.Result.Core;
 
-public class TraceResult<TValue, TError> : Result<TValue, TError>
+public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 {
-    public override bool IsOk { get; }
+    public static implicit operator TraceResult<TValue, TError>(OkVariant variant) => variant;
+    public static implicit operator TraceResult<TValue, TError>(ErrorVariant variant) => variant;
 
     public static OkVariant Ok(Guid traceId, TValue value)
     {
@@ -14,17 +15,39 @@ public class TraceResult<TValue, TError> : Result<TValue, TError>
         return new ErrorVariant(traceId, error);
     }
 
+    public new T Match<T>(Func<TValue, Guid, T> onOk, Func<TError, Guid, T> onErr)
+    {
+        return this switch
+        {
+            OkVariant ok => onOk(ok.Value, ok.TraceId),
+            ErrorVariant err => onErr(err.ErrorValue, err.TraceId),
+            _ => throw new InvalidOperationException("Unknow variant of TraceResult")
+        };
+    }
+
+    public new void Match(Action<TValue, Guid> onOk, Action<TError, Guid> onErr)
+    {
+        switch (this)
+        {
+            case OkVariant ok:
+                onOk(ok.Value, ok.TraceId);
+                break;
+            case ErrorVariant err:
+                onErr(err.ErrorValue, err.TraceId);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown variant of TraceResult");
+        }
+    }
 
     public new class OkVariant : Result<TValue, TError>.OkVariant
     {
         internal OkVariant(Guid traceId, TValue value) : base(value)
         {
             TraceId = traceId;
-            Value = value;
         }
 
-        public TValue Value { get; }
-        public Guid TraceId { get; set; }
+        public Guid TraceId { get; }
         public override bool IsOk => true;
     }
 
@@ -33,11 +56,9 @@ public class TraceResult<TValue, TError> : Result<TValue, TError>
         internal ErrorVariant(Guid traceId, TError error) : base(error)
         {
             TraceId = traceId;
-            ErrorValue = error;
         }
 
-        public TError ErrorValue { get; }
-        public Guid TraceId { get; set; }
+        public Guid TraceId { get; }
         public override bool IsOk => false;
     }
 }

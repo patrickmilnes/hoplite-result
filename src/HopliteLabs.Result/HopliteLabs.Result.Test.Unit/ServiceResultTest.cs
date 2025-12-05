@@ -10,15 +10,19 @@ public class ServiceResultTest
     {
         var statusCode = HttpStatusCode.OK;
         var value = "Success";
-        var result = ServiceResult<string, string>.Ok(value, statusCode);
+        ServiceResult<string, string> result = ServiceResult<string, string>.Ok(value, statusCode);
 
         var output = result.Match(
-            val => val,
-            err => err);
+            (val, status) => val,
+            (err, status) => err);
+
+        var resultStatusCode = result.Match(
+            (val, status) => status,
+            (err, status) => status);
 
         Assert.True(result.IsOk);
         Assert.Equal(value, output);
-        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(statusCode, resultStatusCode);
     }
 
     [Fact]
@@ -26,15 +30,20 @@ public class ServiceResultTest
     {
         var statusCode = HttpStatusCode.NotFound;
         var error = "Not Found";
-        var result = ServiceResult<string, string>.Err(error, statusCode);
+        ServiceResult<string, string> result = ServiceResult<string, string>.Err(error, statusCode);
 
         var output = result.Match(
             val => val,
             err => err);
 
+        var resultStatusCode = result.Match(
+            (val, status) => status,
+            (err, status) => status
+        );
+
         Assert.False(result.IsOk);
         Assert.Equal(error, output);
-        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(statusCode, resultStatusCode);
     }
 
     private Task<ServiceResult<Guid, bool>> GetServiceResultAsync(bool succeed)

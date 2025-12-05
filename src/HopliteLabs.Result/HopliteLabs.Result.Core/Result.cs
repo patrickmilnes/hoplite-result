@@ -3,6 +3,7 @@
 public abstract class Result<TValue, TError>
 {
     public abstract bool IsOk { get; }
+    public bool IsErr => !IsOk;
 
     public static Result<TValue, TError> Ok(TValue value)
     {

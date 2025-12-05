@@ -2,19 +2,10 @@ using System.Net;
 
 namespace HopliteLabs.Result.Core;
 
-public class ServiceResult<TValue, TError> : Result<TValue, TError>
+public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 {
-    private readonly object _variant;
-
-    private ServiceResult(object variant, bool isOk)
-    {
-        _variant = variant;
-        IsOk = isOk;
-    }
-    public override bool IsOk { get; }
-
-    public static implicit operator ServiceResult<TValue, TError>(OkVariant ok) => new ServiceResult<TValue, TError>(ok, true);
-    public static implicit operator ServiceResult<TValue, TError>(ErrorVariant err) => new ServiceResult<TValue, TError>(err, false);
+    public static implicit operator ServiceResult<TValue, TError>(OkVariant variant) => variant;
+    public static implicit operator ServiceResult<TValue, TError>(ErrorVariant variant) => variant;
 
     public static OkVariant Ok(TValue value, HttpStatusCode statusCode)
     {
@@ -26,16 +17,39 @@ public class ServiceResult<TValue, TError> : Result<TValue, TError>
         return new ErrorVariant(error, statusCode);
     }
 
+    public new T Match<T>(Func<TValue, HttpStatusCode, T> onOk, Func<TError, HttpStatusCode, T> onErr)
+    {
+        return this switch
+        {
+            OkVariant ok => onOk(ok.Value, ok.StatusCode),
+            ErrorVariant err => onErr(err.ErrorValue, err.StatusCode),
+            _ => throw new InvalidOperationException("Unknow variant of ServiceResult")
+        };
+    }
+
+    public new void Match(Action<TValue, HttpStatusCode> onOk, Action<TError, HttpStatusCode> onErr)
+    {
+        switch (this)
+        {
+            case OkVariant ok:
+                onOk(ok.Value, ok.StatusCode);
+                break;
+            case ErrorVariant err:
+                onErr(err.ErrorValue, err.StatusCode);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown variant of ServiceResult");
+        }
+    }
+
     public new class OkVariant : Result<TValue, TError>.OkVariant
     {
         internal OkVariant(TValue value, HttpStatusCode statusCode) : base(value)
         {
-            Value = value;
             StatusCode = statusCode;
         }
 
-        public TValue Value { get; }
-        public HttpStatusCode StatusCode { get; set; }
+        public HttpStatusCode StatusCode { get; }
         public override bool IsOk => true;
     }
 
@@ -43,12 +57,10 @@ public class ServiceResult<TValue, TError> : Result<TValue, TError>
     {
         internal ErrorVariant(TError error, HttpStatusCode statusCode) : base(error)
         {
-            ErrorValue = error;
             StatusCode = statusCode;
         }
 
-        public TError ErrorValue { get; }
-        public HttpStatusCode StatusCode { get; set; }
+        public HttpStatusCode StatusCode { get; }
         public override bool IsOk => false;
     }
 }
