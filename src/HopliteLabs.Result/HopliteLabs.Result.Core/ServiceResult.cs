@@ -4,7 +4,17 @@ namespace HopliteLabs.Result.Core;
 
 public class ServiceResult<TValue, TError> : Result<TValue, TError>
 {
+    private readonly object _variant;
+
+    private ServiceResult(object variant, bool isOk)
+    {
+        _variant = variant;
+        IsOk = isOk;
+    }
     public override bool IsOk { get; }
+
+    public static implicit operator ServiceResult<TValue, TError>(OkVariant ok) => new ServiceResult<TValue, TError>(ok, true);
+    public static implicit operator ServiceResult<TValue, TError>(ErrorVariant err) => new ServiceResult<TValue, TError>(err, false);
 
     public static OkVariant Ok(TValue value, HttpStatusCode statusCode)
     {
