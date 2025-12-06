@@ -2,37 +2,37 @@
 
 public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 {
-    public static TraceResult<TValue, TError> Ok(TValue value, Guid traceId)
+    public static TraceResult<TValue, TError> Ok(Guid traceId, TValue value)
     {
-        return new TraceResultOk<TValue, TError>(value, traceId);
+        return new TraceResultOk<TValue, TError>(traceId, value);
     }
 
-    public static TraceResult<TValue, TError> Err(TError error, Guid traceId)
+    public static TraceResult<TValue, TError> Err(Guid traceId, TError error)
     {
-        return new TraceResultErr<TValue, TError>(error, traceId);
+        return new TraceResultErr<TValue, TError>(traceId, error);
     }
 
     public abstract Guid TraceId { get; }
 
-    public T Match<T>(Func<TValue, Guid, T> onOk, Func<TError, Guid, T> onErr)
+    public T Match<T>(Func<Guid, TValue, T> onOk, Func<Guid, TError, T> onErr)
     {
         return this switch
         {
-            TraceResultOk<TValue, TError> ok => onOk(ok.Value, ok.TraceId),
-            TraceResultErr<TValue, TError> err => onErr(err.ErrorValue, err.TraceId),
+            TraceResultOk<TValue, TError> ok => onOk(ok.TraceId, ok.Value),
+            TraceResultErr<TValue, TError> err => onErr(err.TraceId, err.ErrorValue),
             _ => throw new InvalidOperationException("Unknown variant of TraceResult")
         };
     }
 
-    public void Match(Action<TValue, Guid> onOk, Action<TError, Guid> onErr)
+    public void Match(Action<Guid, TValue> onOk, Action<Guid, TError> onErr)
     {
         switch (this)
         {
             case TraceResultOk<TValue, TError> ok:
-                onOk(ok.Value, ok.TraceId);
+                onOk(ok.TraceId, ok.Value);
                 break;
             case TraceResultErr<TValue, TError> err:
-                onErr(err.ErrorValue, err.TraceId);
+                onErr(err.TraceId, err.ErrorValue);
                 break;
             default:
                 throw new InvalidOperationException("Unknown variant of TraceResult");
@@ -42,7 +42,7 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 
 public sealed class TraceResultOk<TValue, TError> : TraceResult<TValue, TError>
 {
-    internal TraceResultOk(TValue value, Guid traceId) : base()
+    internal TraceResultOk(Guid traceId, TValue value) : base()
     {
         Value = value;
         TraceId = traceId;
@@ -55,7 +55,7 @@ public sealed class TraceResultOk<TValue, TError> : TraceResult<TValue, TError>
 
 public sealed class TraceResultErr<TValue, TError> : TraceResult<TValue, TError>
 {
-    internal TraceResultErr(TError error, Guid traceId) : base()
+    internal TraceResultErr(Guid traceId, TError error) : base()
     {
         ErrorValue = error;
         TraceId = traceId;
