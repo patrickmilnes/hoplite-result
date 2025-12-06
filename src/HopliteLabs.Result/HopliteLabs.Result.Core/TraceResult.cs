@@ -1,4 +1,6 @@
-﻿namespace HopliteLabs.Result.Core;
+﻿using System;
+
+namespace HopliteLabs.Result.Core;
 
 public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 {
@@ -12,6 +14,18 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
     public static TraceResult<TValue, TError> Err(Guid traceId, TError error)
     {
         return new TraceResultErr<TValue, TError>(traceId, error);
+    }
+
+    [Obsolete("Use TraceResult.Ok(traceId, value). Creating a TraceResult via the single-argument Ok overload is not allowed.", true)]
+    public new static Result<TValue, TError> Ok(TValue value)
+    {
+        return default!;
+    }
+
+    [Obsolete("Use TraceResult.Err(traceId, error). Creating a TraceResult via the single-argument Err overload is not allowed.", true)]
+    public new static Result<TValue, TError> Err(TError error)
+    {
+        return default!;
     }
 
     public T Match<T>(Func<Guid, TValue, T> onOk, Func<Guid, TError, T> onErr)
