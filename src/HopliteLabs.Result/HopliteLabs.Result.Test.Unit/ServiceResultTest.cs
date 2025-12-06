@@ -1,4 +1,3 @@
-using System.Net;
 using HopliteLabs.Result.Core;
 using HopliteLabs.Result.Test.Unit.Assets;
 
@@ -30,8 +29,8 @@ public class ServiceResultTest
         var result = ServiceResult<string, MyError>.Err(error, statusCode);
 
         var (output, outputStatus) = result.Match(
-              (val, status) => (val, status),
-              (err, status) => (err.Message, status));
+            (val, status) => (val, status),
+            (err, status) => (err.Message, status));
 
         Assert.False(result.IsOk);
         Assert.Equal(error.Message, output);

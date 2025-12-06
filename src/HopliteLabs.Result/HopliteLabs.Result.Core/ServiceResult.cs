@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace HopliteLabs.Result.Core;
 
 public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>

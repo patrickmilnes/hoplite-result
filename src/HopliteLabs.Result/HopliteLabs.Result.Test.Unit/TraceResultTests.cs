@@ -14,8 +14,8 @@ public class TraceResultTests
 
         // Act
         var (traceId, output) = result.Match(
-      (traceId, value) => (traceId, value),
-      (traceId, err) => (traceId, err.Message));
+            (traceId, value) => (traceId, value),
+            (traceId, err) => (traceId, err.Message));
 
         // Assert
         Assert.True(result.IsOk);
@@ -32,8 +32,8 @@ public class TraceResultTests
 
         // Act
         var (traceId, output) = result.Match(
-  (traceId, value) => (traceId, value),
-  (traceId, err) => (traceId, err.Message));
+            (traceId, value) => (traceId, value),
+            (traceId, err) => (traceId, err.Message));
 
         // Assert
         Assert.False(result.IsOk);
