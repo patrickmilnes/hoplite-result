@@ -1,3 +1,4 @@
+using System.Net;
 using HopliteLabs.Result.Core;
 using HopliteLabs.Result.Test.Unit.Assets;
 
