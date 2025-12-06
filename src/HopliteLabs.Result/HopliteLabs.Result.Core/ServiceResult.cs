@@ -1,4 +1,3 @@
-using System;
 using System.Net;
 
 namespace HopliteLabs.Result.Core;
@@ -7,13 +6,17 @@ public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 {
     public abstract HttpStatusCode StatusCode { get; }
 
-    [Obsolete("Use ServiceResult.Ok(value, statusCode). Creating a ServiceResult via the single-argument Ok overload is not allowed.", true)]
+    [Obsolete(
+        "Use ServiceResult.Ok(value, statusCode). Creating a ServiceResult via the single-argument Ok overload is not allowed.",
+        true)]
     public new static Result<TValue, TError> Ok(TValue value)
     {
         return default!;
     }
 
-    [Obsolete("Use ServiceResult.Err(error, statusCode). Creating a ServiceResult via the single-argument Err overload is not allowed.", true)]
+    [Obsolete(
+        "Use ServiceResult.Err(error, statusCode). Creating a ServiceResult via the single-argument Err overload is not allowed.",
+        true)]
     public new static Result<TValue, TError> Err(TError error)
     {
         return default!;
