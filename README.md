@@ -30,7 +30,9 @@ var output = result.Match(
 
 ### ServiceResult or TraceResult
 
-Two methods can be performed
+Two methods can be performed:
+
+1. Tuple deconstruction
 
 ```csharp
     var (output, outputStatus) = result.Match(
@@ -42,7 +44,7 @@ Two methods can be performed
         Assert.Equal(statusCode, outputStatus);
 ```
 
-or
+2. Single output value and using the getter on the variable `result` (from Variable Creation)
 
 ```csharp
         var output = result.Match(
