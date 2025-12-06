@@ -13,14 +13,14 @@ public class TraceResultTests
         var result = TraceResult<string, MyError>.Ok(id, "Hello");
 
         // Act
-        var output = result.Match(
-            (traceId, value) => value,
-            (traceId, err) => err.Message);
+        var (traceId, output) = result.Match(
+      (traceId, value) => (traceId, value),
+      (traceId, err) => (traceId, err.Message));
 
         // Assert
         Assert.True(result.IsOk);
         Assert.Equal("Hello", output);
-        Assert.Equal(id, result.TraceId);
+        Assert.Equal(id, traceId);
     }
 
     [Fact]
@@ -31,13 +31,13 @@ public class TraceResultTests
         var result = TraceResult<string, MyError>.Err(id, new MyError("An error has occurred"));
 
         // Act
-        var output = result.Match(
-            (traceId, value) => value,
-            (traceId, err) => err.Message);
+        var (traceId, output) = result.Match(
+  (traceId, value) => (traceId, value),
+  (traceId, err) => (traceId, err.Message));
 
         // Assert
         Assert.False(result.IsOk);
         Assert.Equal("An error has occurred", output);
-        Assert.Equal(id, result.TraceId);
+        Assert.Equal(id, traceId);
     }
 }
