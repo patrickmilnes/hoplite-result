@@ -2,6 +2,8 @@
 
 public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 {
+    public abstract Guid TraceId { get; }
+
     public static TraceResult<TValue, TError> Ok(Guid traceId, TValue value)
     {
         return new TraceResultOk<TValue, TError>(traceId, value);
@@ -11,8 +13,6 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
     {
         return new TraceResultErr<TValue, TError>(traceId, error);
     }
-
-    public abstract Guid TraceId { get; }
 
     public T Match<T>(Func<Guid, TValue, T> onOk, Func<Guid, TError, T> onErr)
     {
@@ -42,7 +42,7 @@ public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 
 public sealed class TraceResultOk<TValue, TError> : TraceResult<TValue, TError>
 {
-    internal TraceResultOk(Guid traceId, TValue value) : base()
+    internal TraceResultOk(Guid traceId, TValue value)
     {
         Value = value;
         TraceId = traceId;
@@ -55,7 +55,7 @@ public sealed class TraceResultOk<TValue, TError> : TraceResult<TValue, TError>
 
 public sealed class TraceResultErr<TValue, TError> : TraceResult<TValue, TError>
 {
-    internal TraceResultErr(Guid traceId, TError error) : base()
+    internal TraceResultErr(Guid traceId, TError error)
     {
         ErrorValue = error;
         TraceId = traceId;

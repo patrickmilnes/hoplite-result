@@ -39,14 +39,9 @@ public class ServiceResultTest
 
     private async Task<ServiceResult<Guid, bool>> GetServiceResultAsync(bool succeed)
     {
-        if (succeed)
-        {
-            return ServiceResult<Guid, bool>.Ok(Guid.NewGuid(), HttpStatusCode.OK);
-        }
-        else
-        {
-            return ServiceResult<Guid, bool>.Err(false, HttpStatusCode.MethodNotAllowed);
-        }
+        if (succeed) return ServiceResult<Guid, bool>.Ok(Guid.NewGuid(), HttpStatusCode.OK);
+
+        return ServiceResult<Guid, bool>.Err(false, HttpStatusCode.MethodNotAllowed);
     }
 
     [Fact]
@@ -62,5 +57,4 @@ public class ServiceResultTest
         var result = await GetServiceResultAsync(false);
         Assert.False(result.IsOk);
     }
-
 }

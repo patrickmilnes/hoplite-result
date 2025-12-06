@@ -2,6 +2,8 @@
 
 public abstract class Result<TValue, TError>
 {
+    public abstract bool IsOk { get; }
+    public bool IsErr => !IsOk;
 
     public static Result<TValue, TError> Ok(TValue value)
     {
@@ -12,9 +14,6 @@ public abstract class Result<TValue, TError>
     {
         return new ResultErr<TValue, TError>(error);
     }
-
-    public abstract bool IsOk { get; }
-    public bool IsErr => !IsOk;
 
     public T Match<T>(Func<TValue, T> onOk, Func<TError, T> onErr)
     {
@@ -45,7 +44,7 @@ public abstract class Result<TValue, TError>
 
 public sealed class ResultOk<TValue, TError> : Result<TValue, TError>
 {
-    internal ResultOk(TValue value) : base()
+    internal ResultOk(TValue value)
     {
         Value = value;
     }
@@ -56,7 +55,7 @@ public sealed class ResultOk<TValue, TError> : Result<TValue, TError>
 
 public sealed class ResultErr<TValue, TError> : Result<TValue, TError>
 {
-    internal ResultErr(TError error) : base()
+    internal ResultErr(TError error)
     {
         ErrorValue = error;
     }

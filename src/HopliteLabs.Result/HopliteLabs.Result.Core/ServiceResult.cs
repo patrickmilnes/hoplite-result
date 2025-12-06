@@ -4,6 +4,8 @@ namespace HopliteLabs.Result.Core;
 
 public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 {
+    public abstract HttpStatusCode StatusCode { get; }
+
     public static ServiceResult<TValue, TError> Ok(TValue value, HttpStatusCode statusCode)
     {
         return new ServiceResultOk<TValue, TError>(value, statusCode);
@@ -13,8 +15,6 @@ public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
     {
         return new ServiceResultErr<TValue, TError>(error, statusCode);
     }
-
-    public abstract HttpStatusCode StatusCode { get; }
 
     public T Match<T>(Func<TValue, HttpStatusCode, T> onOk, Func<TError, HttpStatusCode, T> onErr)
     {
@@ -44,7 +44,7 @@ public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 
 public sealed class ServiceResultOk<TValue, TError> : ServiceResult<TValue, TError>
 {
-    internal ServiceResultOk(TValue value, HttpStatusCode statusCode) : base()
+    internal ServiceResultOk(TValue value, HttpStatusCode statusCode)
     {
         Value = value;
         StatusCode = statusCode;
@@ -57,7 +57,7 @@ public sealed class ServiceResultOk<TValue, TError> : ServiceResult<TValue, TErr
 
 public sealed class ServiceResultErr<TValue, TError> : ServiceResult<TValue, TError>
 {
-    internal ServiceResultErr(TError error, HttpStatusCode statusCode) : base()
+    internal ServiceResultErr(TError error, HttpStatusCode statusCode)
     {
         ErrorValue = error;
         StatusCode = statusCode;

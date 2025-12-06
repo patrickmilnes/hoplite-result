@@ -60,7 +60,6 @@ public class ResultTests
     }
 
 
-
     [Fact]
     public void GivenMethodError_Result_ReturnsFalseIsOk()
     {
