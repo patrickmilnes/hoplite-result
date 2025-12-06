@@ -1,43 +1,83 @@
 ﻿namespace HopliteLabs.Result.Core;
 
-public class TraceResult<TValue, TError> : Result<TValue, TError>
+public abstract class TraceResult<TValue, TError> : Result<TValue, TError>
 {
-    public override bool IsOk { get; }
+    public abstract Guid TraceId { get; }
 
-    public static OkVariant Ok(Guid traceId, TValue value)
+    public static TraceResult<TValue, TError> Ok(Guid traceId, TValue value)
     {
-        return new OkVariant(traceId, value);
+        return new TraceResultOk<TValue, TError>(traceId, value);
     }
 
-    public static ErrorVariant Err(Guid traceId, TError error)
+    public static TraceResult<TValue, TError> Err(Guid traceId, TError error)
     {
-        return new ErrorVariant(traceId, error);
+        return new TraceResultErr<TValue, TError>(traceId, error);
     }
 
-
-    public new class OkVariant : Result<TValue, TError>.OkVariant
+    [Obsolete(
+        "Use TraceResult.Ok(traceId, value). Creating a TraceResult via the single-argument Ok overload is not allowed.",
+        true)]
+    public new static Result<TValue, TError> Ok(TValue value)
     {
-        public OkVariant(Guid traceId, TValue value) : base(value)
+        return default!;
+    }
+
+    [Obsolete(
+        "Use TraceResult.Err(traceId, error). Creating a TraceResult via the single-argument Err overload is not allowed.",
+        true)]
+    public new static Result<TValue, TError> Err(TError error)
+    {
+        return default!;
+    }
+
+    public T Match<T>(Func<Guid, TValue, T> onOk, Func<Guid, TError, T> onErr)
+    {
+        return this switch
         {
-            TraceId = traceId;
-            Value = value;
-        }
-
-        public TValue Value { get; }
-        public Guid TraceId { get; set; }
-        public override bool IsOk => true;
+            TraceResultOk<TValue, TError> ok => onOk(ok.TraceId, ok.Value),
+            TraceResultErr<TValue, TError> err => onErr(err.TraceId, err.ErrorValue),
+            _ => throw new InvalidOperationException("Unknown variant of TraceResult")
+        };
     }
 
-    public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
+    public void Match(Action<Guid, TValue> onOk, Action<Guid, TError> onErr)
     {
-        public ErrorVariant(Guid traceId, TError error) : base(error)
+        switch (this)
         {
-            TraceId = traceId;
-            ErrorValue = error;
+            case TraceResultOk<TValue, TError> ok:
+                onOk(ok.TraceId, ok.Value);
+                break;
+            case TraceResultErr<TValue, TError> err:
+                onErr(err.TraceId, err.ErrorValue);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown variant of TraceResult");
         }
-
-        public TError ErrorValue { get; }
-        public Guid TraceId { get; set; }
-        public override bool IsOk => false;
     }
+}
+
+public sealed class TraceResultOk<TValue, TError> : TraceResult<TValue, TError>
+{
+    internal TraceResultOk(Guid traceId, TValue value)
+    {
+        Value = value;
+        TraceId = traceId;
+    }
+
+    public TValue Value { get; }
+    public override Guid TraceId { get; }
+    public override bool IsOk => true;
+}
+
+public sealed class TraceResultErr<TValue, TError> : TraceResult<TValue, TError>
+{
+    internal TraceResultErr(Guid traceId, TError error)
+    {
+        ErrorValue = error;
+        TraceId = traceId;
+    }
+
+    public TError ErrorValue { get; }
+    public override Guid TraceId { get; }
+    public override bool IsOk => false;
 }

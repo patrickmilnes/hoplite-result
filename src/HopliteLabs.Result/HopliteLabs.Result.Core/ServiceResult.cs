@@ -2,43 +2,84 @@ using System.Net;
 
 namespace HopliteLabs.Result.Core;
 
-public class ServiceResult<TValue, TError> : Result<TValue, TError>
+public abstract class ServiceResult<TValue, TError> : Result<TValue, TError>
 {
-    public override bool IsOk { get; }
+    public abstract HttpStatusCode StatusCode { get; }
 
-    public static OkVariant Ok(TValue value, HttpStatusCode statusCode)
+    [Obsolete(
+        "Use ServiceResult.Ok(value, statusCode). Creating a ServiceResult via the single-argument Ok overload is not allowed.",
+        true)]
+    public new static Result<TValue, TError> Ok(TValue value)
     {
-        return new OkVariant(value, statusCode);
+        return default!;
     }
 
-    public static ErrorVariant Err(TError error, HttpStatusCode statusCode)
+    [Obsolete(
+        "Use ServiceResult.Err(error, statusCode). Creating a ServiceResult via the single-argument Err overload is not allowed.",
+        true)]
+    public new static Result<TValue, TError> Err(TError error)
     {
-        return new ErrorVariant(error, statusCode);
+        return default!;
     }
 
-    public new class OkVariant : Result<TValue, TError>.OkVariant
+    public static ServiceResult<TValue, TError> Ok(TValue value, HttpStatusCode statusCode)
     {
-        public OkVariant(TValue value, HttpStatusCode statusCode) : base(value)
+        return new ServiceResultOk<TValue, TError>(value, statusCode);
+    }
+
+    public static ServiceResult<TValue, TError> Err(TError error, HttpStatusCode statusCode)
+    {
+        return new ServiceResultErr<TValue, TError>(error, statusCode);
+    }
+
+    public T Match<T>(Func<TValue, HttpStatusCode, T> onOk, Func<TError, HttpStatusCode, T> onErr)
+    {
+        return this switch
         {
-            Value = value;
-            StatusCode = statusCode;
-        }
-
-        public TValue Value { get; }
-        public HttpStatusCode StatusCode { get; set; }
-        public override bool IsOk => true;
+            ServiceResultOk<TValue, TError> ok => onOk(ok.Value, ok.StatusCode),
+            ServiceResultErr<TValue, TError> err => onErr(err.ErrorValue, err.StatusCode),
+            _ => throw new InvalidOperationException("Unknown variant of ServiceResult")
+        };
     }
 
-    public new class ErrorVariant : Result<TValue, TError>.ErrorVariant
+    public void Match(Action<TValue, HttpStatusCode> onOk, Action<TError, HttpStatusCode> onErr)
     {
-        public ErrorVariant(TError error, HttpStatusCode statusCode) : base(error)
+        switch (this)
         {
-            ErrorValue = error;
-            StatusCode = statusCode;
+            case ServiceResultOk<TValue, TError> ok:
+                onOk(ok.Value, ok.StatusCode);
+                break;
+            case ServiceResultErr<TValue, TError> err:
+                onErr(err.ErrorValue, err.StatusCode);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown variant of ServiceResult");
         }
-
-        public TError ErrorValue { get; }
-        public HttpStatusCode StatusCode { get; set; }
-        public override bool IsOk => false;
     }
+}
+
+public sealed class ServiceResultOk<TValue, TError> : ServiceResult<TValue, TError>
+{
+    internal ServiceResultOk(TValue value, HttpStatusCode statusCode)
+    {
+        Value = value;
+        StatusCode = statusCode;
+    }
+
+    public TValue Value { get; }
+    public override HttpStatusCode StatusCode { get; }
+    public override bool IsOk => true;
+}
+
+public sealed class ServiceResultErr<TValue, TError> : ServiceResult<TValue, TError>
+{
+    internal ServiceResultErr(TError error, HttpStatusCode statusCode)
+    {
+        ErrorValue = error;
+        StatusCode = statusCode;
+    }
+
+    public TError ErrorValue { get; }
+    public override HttpStatusCode StatusCode { get; }
+    public override bool IsOk => false;
 }
